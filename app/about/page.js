@@ -106,6 +106,7 @@ const About = () => {
         >
           Get Started
         </Link>
+
       </section>
     </div>
   );
