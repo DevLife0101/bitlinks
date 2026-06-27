@@ -55,6 +55,7 @@ const Shorten = () => {
 
     setLoading(true);
     setSuccess(false);
+    setServerMessage(""); // 1. FIXED: Clear old messages immediately when the user tries again
 
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
@@ -99,9 +100,10 @@ const Shorten = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-900 via-purple-900 to-black px-6">
+    // 2. FIXED: Changed bg-linear-to-* to bg-gradient-to-*
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-black px-6">
       <div className="w-full max-w-xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-3xl p-10 text-white">
-        <h1 className="text-3xl font-bold text-center mb-2 bg-linear-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+        <h1 className="text-3xl font-bold text-center mb-2 bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
           Generate Your Short URL
         </h1>
 
@@ -153,7 +155,7 @@ const Shorten = () => {
             disabled={
               loading || Object.keys(errors).length > 0 || !url || !shorturl
             }
-            className="mt-4 py-3 rounded-xl font-semibold bg-linear-to-r from-purple-500 to-pink-500 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/40 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
+            className="mt-4 py-3 rounded-xl font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/40 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {loading ? (
               <>
@@ -176,7 +178,9 @@ const Shorten = () => {
         {/* Server Message */}
         {serverMessage && (
           <div
-            className={`mt-6 text-center font-semibold ${success ? "text-green-400" : "text-red-400"}`}
+            className={`mt-6 text-center font-semibold ${
+              success ? "text-green-400" : "text-red-400"
+            }`}
           >
             {serverMessage}
           </div>

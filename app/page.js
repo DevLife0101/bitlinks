@@ -1,12 +1,36 @@
-"use client"
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
-export default function Home() {
+// 1. MOVED OUTSIDE: The Counter component is now independent
+const Counter = ({ end }) => {
+  const [count, setCount] = useState(0);
 
+  useEffect(() => {
+    let start = 0;
+    const duration = 1500;
+    const increment = end / (duration / 16);
+
+    const counter = setInterval(() => {
+      start += increment;
+      if (start >= end) {
+        setCount(end);
+        clearInterval(counter);
+      } else {
+        setCount(Math.floor(start));
+      }
+    }, 16);
+
+    return () => clearInterval(counter);
+  }, [end]);
+
+  return <span>{count}</span>;
+};
+
+export default function Home() {
   // Typing Effect
   const text = "The Best URL Shortener in the Market";
   const [displayedText, setDisplayedText] = useState("");
@@ -21,41 +45,14 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  // Counter Animation
-  const Counter = ({ end }) => {
-    const [count, setCount] = useState(0);
-
-    useEffect(() => {
-      let start = 0;
-      const duration = 1500;
-      const increment = end / (duration / 16);
-
-      const counter = setInterval(() => {
-        start += increment;
-        if (start >= end) {
-          setCount(end);
-          clearInterval(counter);
-        } else {
-          setCount(Math.floor(start));
-        }
-      }, 16);
-
-      return () => clearInterval(counter);
-    }, [end]);
-
-    return <span>{count}</span>;
-  };
-
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-black text-white">
-
       {/* Floating Background Shapes */}
       <div className="absolute w-72 h-72 bg-purple-500/20 rounded-full blur-3xl top-10 left-10 animate-pulse"></div>
       <div className="absolute w-96 h-96 bg-pink-500/20 rounded-full blur-3xl bottom-10 right-10 animate-pulse"></div>
 
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto grid md:grid-cols-2 items-center px-6 py-24 gap-12 relative z-10">
-
         {/* Left */}
         <motion.div
           initial={{ opacity: 0, x: -60 }}
@@ -64,7 +61,6 @@ export default function Home() {
           viewport={{ once: true }}
           className="flex flex-col gap-6"
         >
-
           <h1 className="text-4xl md:text-6xl font-extrabold leading-tight bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
             {displayedText}
             <span className="animate-pulse">|</span>
@@ -88,7 +84,6 @@ export default function Home() {
               </button>
             </Link>
           </div>
-
         </motion.div>
 
         {/* Right Image */}
@@ -107,7 +102,6 @@ export default function Home() {
             priority
           />
         </motion.div>
-
       </section>
 
       {/* Stats Section */}
@@ -119,7 +113,6 @@ export default function Home() {
           viewport={{ once: true }}
           className="max-w-6xl mx-auto grid md:grid-cols-3 gap-10 text-center"
         >
-
           <div>
             <h2 className="text-4xl font-bold text-purple-400">
               <Counter end={12000} />+
@@ -140,10 +133,8 @@ export default function Home() {
             </h2>
             <p className="text-gray-300 mt-2">Uptime</p>
           </div>
-
         </motion.div>
       </section>
-
     </div>
   );
 }
