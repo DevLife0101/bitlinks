@@ -1,9 +1,9 @@
 import React from "react";
+// 1. Import Link from Next.js
+import Link from "next/link"; 
 
-// 1. Capitalized component name
 const About = () => {
   return (
-    // 2. Removed the extra outer <div> wrapper
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black text-white px-6 py-16">
       {/* Hero Section */}
       <section className="max-w-6xl mx-auto text-center">
@@ -99,13 +99,16 @@ const About = () => {
         <p className="mb-6 text-gray-100">
           Start creating clean and shareable URLs today.
         </p>
-        <button className="bg-black text-white px-8 py-3 rounded-full hover:bg-gray-900 transition">
+        {/* 2. Replaced <button> with <Link>, added inline-block */}
+        <Link 
+          href="/shorten"
+          className="inline-block bg-black text-white px-8 py-3 rounded-full hover:bg-gray-900 transition"
+        >
           Get Started
-        </button>
+        </Link>
       </section>
     </div>
   );
 };
 
-// 3. Export matches the capitalized name
 export default About;
