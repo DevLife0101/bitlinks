@@ -101,9 +101,9 @@ const About = () => {
         </p>
         {/* 2. Replaced <button> with <Link>, added inline-block */}
         <Link 
-          href="/shorten">
-          <button className="inline-block bg-black text-white px-8 py-3 rounded-full hover:bg-gray-900 transition">
-          </button>
+          href="/shorten"
+           className="inline-block bg-black text-white px-8 py-3 rounded-full hover:bg-gray-900 transition"
+        >
           Get Started
         </Link>
       </section>
