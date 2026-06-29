@@ -20,6 +20,9 @@
     "react-dom": "19.2.3",
     "uuid": "^14.0.1"
   },
+  "overrides": {
+    "uuid": "$uuid"
+  },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "babel-plugin-react-compiler": "1.0.0",
