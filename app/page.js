@@ -34,6 +34,9 @@ export default function Home() {
   // Typing Effect
   const text = "The Best URL Shortener in the Market";
   const [displayedText, setDisplayedText] = useState("");
+  
+  // Dynamic Authentication State (Toggle this to true/false to test)
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     let i = 0;
@@ -67,22 +70,46 @@ export default function Home() {
           </h1>
 
           <p className="text-gray-300 text-lg leading-relaxed">
-            Simple. Secure. Private. Create powerful short links instantly
-            without login or tracking.
+            The ultimate URL management platform. BitLinks provides secure, 
+            high-performance redirection technology paired with a comprehensive user 
+            dashboard to optimize and track your digital reach.
           </p>
 
+          {/* Dynamic Buttons */}
           <div className="flex gap-4 mt-4">
-            <Link href="/shorten">
-              <button className="px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/40 transition-all duration-300">
-                Try Now 🚀
-              </button>
-            </Link>
-
-            <Link href="/github">
-              <button className="px-6 py-3 rounded-xl font-semibold border border-white/30 hover:bg-white/10 transition-all duration-300">
-                GitHub
-              </button>
-            </Link>
+            {isLoggedIn ? (
+              // WHAT USERS SEE WHEN LOGGED IN
+              <>
+                <Link
+                  href="/dashboard"
+                  className="inline-block px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/40 transition-all duration-300"
+                >
+                  Dashboard 📊
+                </Link>
+                <button
+                  onClick={() => setIsLoggedIn(false)}
+                  className="px-6 py-3 rounded-xl font-semibold border border-white/30 hover:bg-white/10 transition-all duration-300"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              // WHAT USERS SEE WHEN LOGGED OUT
+              <>
+                <Link
+                  href="/shorten"
+                  className="inline-block px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/40 transition-all duration-300"
+                >
+                  Try Now 🚀
+                </Link>
+                <Link
+                  href="/login"
+                  className="inline-block px-6 py-3 rounded-xl font-semibold border border-white/30 hover:bg-white/10 transition-all duration-300"
+                >
+                  Login
+                </Link>
+              </>
+            )}
           </div>
         </motion.div>
 

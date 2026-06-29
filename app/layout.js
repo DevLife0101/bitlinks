@@ -3,6 +3,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { AuthProvider } from "./Providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,10 +26,15 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-purple-50`}
       >
-        < Navbar />
-        {children}
-         <Analytics />
-         <SpeedInsights />
+        {/* Wrap the ENTIRE visual app in the AuthProvider */}
+        <AuthProvider>
+          <Navbar />
+          <main>{children}</main>
+        </AuthProvider>
+         
+        {/* Analytics tools can sit quietly at the bottom of the body */}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
