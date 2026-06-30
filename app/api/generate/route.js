@@ -1,12 +1,18 @@
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
+// 1. NEW IMPORTS: Bring in NextAuth to check sessions
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function POST(request) {
   try {
+    // 2. THE MAGIC: Check if the user is currently logged in
+    const session = await getServerSession(authOptions);
+
     const body = await request.json();
     const { url, shorturl } = body || {};
 
-    // 1. Check if fields exist
+    // 3. Check if fields exist
     if (!url || !shorturl) {
       return NextResponse.json(
         {
@@ -18,9 +24,9 @@ export async function POST(request) {
       );
     }
 
-    // 2. NEW: Check if the provided URL is actually a valid web address
+    // 4. Check if the provided URL is actually a valid web address
     try {
-      new URL(url); // This will throw an error if the URL is invalid
+      new URL(url); 
     } catch (err) {
       return NextResponse.json(
         {
@@ -34,9 +40,9 @@ export async function POST(request) {
 
     const client = await clientPromise;
     const db = client.db("bitlinks");
-    const collection = db.collection("url");
+    const collection = db.collection("url"); // Kept your exact collection name!
 
-    // 3. Check for duplicates
+    // 5. Check for duplicates
     const existing = await collection.findOne({ shorturl });
     if (existing) {
       return NextResponse.json(
@@ -49,8 +55,14 @@ export async function POST(request) {
       );
     }
 
-    // 4. Insert into database
-    await collection.insertOne({ url, shorturl });
+    // 6. UPDATED: Insert into database with user data and timestamp!
+    await collection.insertOne({ 
+      url, 
+      shorturl,
+      clicks: 0, // Added this so your dashboard has a starting number to track!
+      createdAt: new Date(),
+      userEmail: session ? session.user.email : null // Attaches email if logged in, null if anonymous
+    });
 
     return NextResponse.json(
       {
