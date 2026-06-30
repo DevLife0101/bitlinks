@@ -1,16 +1,25 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import GithubProvider from "next-auth/providers/github"; // 1. Imported the GitHub Provider
+import GithubProvider from "next-auth/providers/github"; 
+import GoogleProvider from "next-auth/providers/google"; // 1. Imported the Google Provider
 import clientPromise from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
 
 export const authOptions = {
   providers: [
-    // 2. Added GitHub Provider to the array
+    // 2. Added Google Provider to the array
+    GoogleProvider({
+      clientId: process.env.GOOGLE_ID,
+      clientSecret: process.env.GOOGLE_SECRET,
+    }),
+    
+    // Your existing GitHub Provider
     GithubProvider({
       clientId: process.env.GITHUB_ID,
       clientSecret: process.env.GITHUB_SECRET,
     }),
+    
+    // Your existing Credentials Provider
     CredentialsProvider({
       name: "Credentials",
       credentials: {
