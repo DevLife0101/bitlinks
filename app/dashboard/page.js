@@ -8,7 +8,6 @@ const Dashboard = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
   
-  // NEW: State to hold the links from the database
   const [links, setLinks] = useState([]);
   const [fetchingLinks, setFetchingLinks] = useState(true);
 
@@ -19,12 +18,13 @@ const Dashboard = () => {
     }
   }, [status, router]);
 
-  // NEW: Fetch the user's links once they are authenticated
+  // FETCH LINKS LOGIC (UPDATED WITH CACHE FIX & FOCUS LISTENER)
   useEffect(() => {
     if (status === "authenticated") {
       const fetchLinks = async () => {
         try {
-          const res = await fetch("/api/links");
+          // FIX 1: Added { cache: "no-store" } so it never loads stale data
+          const res = await fetch("/api/links", { cache: "no-store" });
           const data = await res.json();
           if (data.success) {
             setLinks(data.links);
@@ -36,7 +36,16 @@ const Dashboard = () => {
         }
       };
       
+      // Fetch immediately when the page loads
       fetchLinks();
+
+      // FIX 2: Listen for the user clicking back to this tab, and refresh automatically!
+      window.addEventListener("focus", fetchLinks);
+
+      // Clean up the listener when they leave the page
+      return () => {
+        window.removeEventListener("focus", fetchLinks);
+      };
     }
   }, [status]);
 
@@ -76,13 +85,11 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-xl">
             <h3 className="text-gray-400 font-medium mb-2">Total Links</h3>
-            {/* UPDATED: Dynamic Link Count */}
             <p className="text-4xl font-bold text-white">{links.length}</p>
           </div>
           
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-xl">
             <h3 className="text-gray-400 font-medium mb-2">Total Clicks</h3>
-            {/* UPDATED: Dynamic Click Count */}
             <p className="text-4xl font-bold text-purple-400">{totalClicks}</p>
           </div>
           
@@ -104,7 +111,6 @@ const Dashboard = () => {
                <div className="w-8 h-8 border-4 border-white/20 border-t-purple-500 rounded-full animate-spin"></div>
             </div>
           ) : links.length > 0 ? (
-            // DISPLAY LINKS IN A LIST
             <div className="flex flex-col gap-4">
               {links.map((link, index) => (
                 <div key={index} className="flex flex-col md:flex-row justify-between items-start md:items-center p-5 bg-white/10 border border-white/20 rounded-xl hover:bg-white/15 transition-all">
@@ -129,7 +135,6 @@ const Dashboard = () => {
               ))}
             </div>
           ) : (
-            // EMPTY STATE
             <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-white/10 rounded-2xl bg-white/5">
               <div className="text-6xl mb-4">🔗</div>
               <h3 className="text-xl font-semibold text-gray-200 mb-2">No links found</h3>

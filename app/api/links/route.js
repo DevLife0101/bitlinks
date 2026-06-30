@@ -3,6 +3,9 @@ import clientPromise from "@/lib/mongodb";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
+// ADDED: This forces Next.js to run this fresh every single time!
+export const dynamic = "force-dynamic"; 
+
 export async function GET(request) {
   try {
     // 1. Get the current logged-in user
