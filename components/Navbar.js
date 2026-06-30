@@ -48,13 +48,13 @@ const Navbar = () => {
                 Try Now
               </Link>
               <Link 
-                href="/api/auth/signin" // NextAuth's built-in login page
+                href="/login" // UPDATED: Now points to your custom login page!
                 className="bg-purple-500 rounded-lg shadow-lg px-3 py-1 font-bold hover:bg-purple-600 transition"
               >
                 Login
               </Link>
               <Link 
-                href="/signup" // You will need to build this custom signup page!
+                href="/signup" 
                 className="bg-pink-500 rounded-lg shadow-lg px-3 py-1 font-bold hover:bg-pink-600 transition"
               >
                 Sign Up

@@ -15,8 +15,10 @@ export const authOptions = {
         const client = await clientPromise;
         const db = client.db("bitlinks");
         
-        // Find user by email
-        const user = await db.collection("users").findOne({ email: credentials.email });
+        // Find user by email (make sure to format it the same way!)
+        const formattedEmail = credentials.email.toLowerCase().trim();
+        const user = await db.collection("users").findOne({ email: formattedEmail });
+        
         if (!user) throw new Error("No user found with this email");
 
         // Check if password matches
@@ -27,6 +29,10 @@ export const authOptions = {
       }
     })
   ],
+  // ADDED BLOCK: Tells NextAuth to use your custom login page
+  pages: {
+    signIn: '/login',
+  },
   session: {
     strategy: "jwt",
   },
