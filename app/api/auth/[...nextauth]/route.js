@@ -1,10 +1,16 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GithubProvider from "next-auth/providers/github"; // 1. Imported the GitHub Provider
 import clientPromise from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
 
 export const authOptions = {
   providers: [
+    // 2. Added GitHub Provider to the array
+    GithubProvider({
+      clientId: process.env.GITHUB_ID,
+      clientSecret: process.env.GITHUB_SECRET,
+    }),
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -29,7 +35,7 @@ export const authOptions = {
       }
     })
   ],
-  // ADDED BLOCK: Tells NextAuth to use your custom login page
+  // Tells NextAuth to use your custom login page
   pages: {
     signIn: '/login',
   },
