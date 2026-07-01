@@ -16,7 +16,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Fixed the loading state call here
+    setLoading(true); 
     setError("");
 
     try {
@@ -71,7 +71,7 @@ const Login = () => {
             />
           </div>
 
-          {/* Password Input */}
+          {/* Password Input & Forgot Password Link */}
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1 ml-1">
               Password
@@ -86,6 +86,12 @@ const Login = () => {
               placeholder="••••••••"
               className="px-5 py-3 rounded-xl w-full bg-white/20 border border-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300 placeholder-gray-400"
             />
+            {/* Added Forgot Password Link Here */}
+            <div className="flex justify-end mt-2">
+              <Link href="/forgot-password" className="text-sm text-purple-400 hover:text-pink-400 transition-colors">
+                Forgot password?
+              </Link>
+            </div>
           </div>
 
           {/* Error Message Display */}
