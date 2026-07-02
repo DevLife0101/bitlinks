@@ -57,6 +57,27 @@ const Dashboard = () => {
     }
   }, [status]);
 
+  // Handle Native Sharing or Fallback to Clipboard
+  const handleShare = async (shorturl) => {
+    const fullUrl = `https://bitlinks-blond.vercel.app/${shorturl}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'BitLinks Short URL',
+          text: 'Check out this link!',
+          url: fullUrl,
+        });
+      } catch (error) {
+        console.log('Sharing canceled or failed.', error);
+      }
+    } else {
+      // Fallback for older browsers
+      navigator.clipboard.writeText(fullUrl);
+      alert("Link copied to clipboard! 📋"); // You could replace this with a nice toast notification later
+    }
+  };
+
   if (status === "loading" || status === "unauthenticated") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900">
@@ -144,6 +165,14 @@ const Dashboard = () => {
                         <span className="text-gray-400 text-sm">Clicks:</span>
                         <span className="font-bold text-white">{link.clicks || 0}</span>
                       </div>
+                      
+                      {/* Share Button */}
+                      <button
+                        onClick={() => handleShare(link.shorturl)}
+                        className="px-4 py-2 rounded-lg font-semibold text-sm transition-all flex items-center gap-2 border bg-blue-500/20 text-blue-300 border-blue-500/30 hover:bg-blue-500/40"
+                      >
+                        Share 🚀
+                      </button>
                       
                       {/* QR Code Toggle Button */}
                       <button
