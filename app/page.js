@@ -94,7 +94,7 @@ export default function Home() {
               </>
             ) : (
               <>
-                <Link href="/signup" className="px-8 py-4 rounded-xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/40 transition-all text-lg flex items-center justify-center gap-2">
+                <Link href="/shorten" className="px-8 py-4 rounded-xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/40 transition-all text-lg flex items-center justify-center gap-2">
                   Try BitLinks Now 🚀
                 </Link>
                 <a href="#developers" className="px-8 py-4 rounded-xl font-bold bg-white/10 border border-white/20 hover:bg-white/20 transition-all text-lg flex items-center justify-center">
