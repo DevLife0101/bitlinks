@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import QRCodeDisplay from "@/components/QRCodeDisplay";
 
 const Dashboard = () => {
   const { data: session, status } = useSession();
@@ -10,6 +11,9 @@ const Dashboard = () => {
   
   const [links, setLinks] = useState([]);
   const [fetchingLinks, setFetchingLinks] = useState(true);
+  
+  // State to track which link's QR code is currently visible
+  const [expandedQr, setExpandedQr] = useState(null);
 
   // ROUTE GUARD
   useEffect(() => {
@@ -18,12 +22,11 @@ const Dashboard = () => {
     }
   }, [status, router]);
 
-  // FETCH LINKS LOGIC (UPDATED WITH CACHE FIX & FOCUS LISTENER)
+  // FETCH LINKS LOGIC
   useEffect(() => {
     if (status === "authenticated") {
       const fetchLinks = async () => {
         try {
-          // FIX 1: Added { cache: "no-store" } so it never loads stale data
           const res = await fetch("/api/links", { cache: "no-store" });
           const data = await res.json();
           if (data.success) {
@@ -36,13 +39,9 @@ const Dashboard = () => {
         }
       };
       
-      // Fetch immediately when the page loads
       fetchLinks();
-
-      // FIX 2: Listen for the user clicking back to this tab, and refresh automatically!
       window.addEventListener("focus", fetchLinks);
 
-      // Clean up the listener when they leave the page
       return () => {
         window.removeEventListener("focus", fetchLinks);
       };
@@ -113,24 +112,52 @@ const Dashboard = () => {
           ) : links.length > 0 ? (
             <div className="flex flex-col gap-4">
               {links.map((link, index) => (
-                <div key={index} className="flex flex-col md:flex-row justify-between items-start md:items-center p-5 bg-white/10 border border-white/20 rounded-xl hover:bg-white/15 transition-all">
-                  <div className="overflow-hidden w-full md:w-2/3">
-                    <a 
-                      href={`/${link.shorturl}`} 
-                      target="_blank" 
-                      className="text-lg font-bold text-purple-400 hover:text-pink-400 transition-colors"
-                    >
-                      bitlinks.com/{link.shorturl}
-                    </a>
-                    <p className="text-gray-400 text-sm mt-1 truncate">
-                      {link.url}
-                    </p>
-                  </div>
+                // Changed to flex-col to allow the QR section to drop down below
+                <div key={index} className="flex flex-col bg-white/10 border border-white/20 rounded-xl overflow-hidden hover:bg-white/15 transition-all">
                   
-                  <div className="mt-4 md:mt-0 bg-white/10 px-4 py-2 rounded-lg border border-white/10 flex items-center gap-2">
-                    <span className="text-gray-400 text-sm">Clicks:</span>
-                    <span className="font-bold text-white">{link.clicks || 0}</span>
+                  {/* Main Link Details Row */}
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-5">
+                    <div className="overflow-hidden w-full md:w-2/3">
+                      <a 
+                        href={`https://bitlinks-blond.vercel.app/${link.shorturl}`} 
+                        target="_blank" 
+                        className="text-lg font-bold text-purple-400 hover:text-pink-400 transition-colors"
+                      >
+                        bitlinks-blond.vercel.app/{link.shorturl}
+                      </a>
+                      <p className="text-gray-400 text-sm mt-1 truncate">
+                        {link.url}
+                      </p>
+                    </div>
+                    
+                    <div className="mt-4 md:mt-0 flex flex-wrap items-center gap-3">
+                      {/* Click Counter */}
+                      <div className="bg-black/20 px-4 py-2 rounded-lg border border-white/10 flex items-center gap-2">
+                        <span className="text-gray-400 text-sm">Clicks:</span>
+                        <span className="font-bold text-white">{link.clicks || 0}</span>
+                      </div>
+                      
+                      {/* QR Code Toggle Button */}
+                      <button
+                        onClick={() => setExpandedQr(expandedQr === link.shorturl ? null : link.shorturl)}
+                        className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all flex items-center gap-2 border ${
+                          expandedQr === link.shorturl 
+                            ? "bg-white text-black border-white" 
+                            : "bg-purple-500/20 text-purple-300 border-purple-500/30 hover:bg-purple-500/40"
+                        }`}
+                      >
+                        {expandedQr === link.shorturl ? "Hide QR" : "Show QR 📱"}
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Expandable QR Code Section */}
+                  {expandedQr === link.shorturl && (
+                    <div className="border-t border-white/10 bg-black/30 p-6 flex justify-center transition-all">
+                      <QRCodeDisplay url={`https://bitlinks-blond.vercel.app/${link.shorturl}`} />
+                    </div>
+                  )}
+
                 </div>
               ))}
             </div>
