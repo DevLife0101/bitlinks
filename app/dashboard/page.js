@@ -35,15 +35,24 @@ const Dashboard = () => {
         } catch (error) {
           console.error("Error fetching links:", error);
         } finally {
-          setFetchingLinks(false);
+          // Only set loading to false on the very first load so the UI doesn't flicker
+          setFetchingLinks((prev) => false); 
         }
       };
       
+      // 1. Initial fetch on load
       fetchLinks();
+
+      // 2. Update instantly when user switches back to this tab
       window.addEventListener("focus", fetchLinks);
 
+      // 3. THE FIX: Silently poll the database every 5 seconds for cross-device QR scans
+      const pollInterval = setInterval(fetchLinks, 5000);
+
+      // Cleanup function
       return () => {
         window.removeEventListener("focus", fetchLinks);
+        clearInterval(pollInterval);
       };
     }
   }, [status]);
@@ -112,7 +121,6 @@ const Dashboard = () => {
           ) : links.length > 0 ? (
             <div className="flex flex-col gap-4">
               {links.map((link, index) => (
-                // Changed to flex-col to allow the QR section to drop down below
                 <div key={index} className="flex flex-col bg-white/10 border border-white/20 rounded-xl overflow-hidden hover:bg-white/15 transition-all">
                   
                   {/* Main Link Details Row */}
