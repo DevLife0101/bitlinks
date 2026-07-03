@@ -1,25 +1,22 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GithubProvider from "next-auth/providers/github"; 
-import GoogleProvider from "next-auth/providers/google"; // 1. Imported the Google Provider
+import GoogleProvider from "next-auth/providers/google"; 
 import clientPromise from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
 
 export const authOptions = {
   providers: [
-    // 2. Added Google Provider to the array
     GoogleProvider({
       clientId: process.env.GOOGLE_ID,
       clientSecret: process.env.GOOGLE_SECRET,
     }),
     
-    // Your existing GitHub Provider
     GithubProvider({
       clientId: process.env.GITHUB_ID,
       clientSecret: process.env.GITHUB_SECRET,
     }),
     
-    // Your existing Credentials Provider
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -30,13 +27,16 @@ export const authOptions = {
         const client = await clientPromise;
         const db = client.db("bitlinks");
         
-        // Find user by email (make sure to format it the same way!)
         const formattedEmail = credentials.email.toLowerCase().trim();
         const user = await db.collection("users").findOne({ email: formattedEmail });
         
         if (!user) throw new Error("No user found with this email");
 
-        // Check if password matches
+        // Check if the user signed up with Google/GitHub previously
+        if (!user.password) {
+           throw new Error("Please log in using the provider you signed up with (Google/GitHub).");
+        }
+
         const isValid = await bcrypt.compare(credentials.password, user.password);
         if (!isValid) throw new Error("Incorrect password");
 
@@ -44,7 +44,43 @@ export const authOptions = {
       }
     })
   ],
-  // Tells NextAuth to use your custom login page
+  
+  // THE FIX: Intercept the login to save OAuth users to MongoDB
+  callbacks: {
+    async signIn({ user, account }) {
+      // We only need to do this for Google and GitHub. 
+      // Credentials already handles its own database logic in the signup route.
+      if (account.provider === "google" || account.provider === "github") {
+        try {
+          const client = await clientPromise;
+          const db = client.db("bitlinks");
+          const formattedEmail = user.email.toLowerCase().trim();
+
+          // Check if this user already exists in our database
+          const existingUser = await db.collection("users").findOne({ email: formattedEmail });
+
+          // If they don't exist, create a new account for them automatically!
+          if (!existingUser) {
+            await db.collection("users").insertOne({
+              name: user.name,
+              email: formattedEmail,
+              image: user.image, // NextAuth provides their profile picture URL!
+              authProvider: account.provider, // Track how they signed up
+              createdAt: new Date(),
+            });
+          }
+          
+          return true; // Continue with the login
+        } catch (error) {
+          console.error("Error saving OAuth user to database:", error);
+          return false; // Deny login if database connection fails
+        }
+      }
+      
+      return true; // Allow Credentials logins to proceed normally
+    },
+  },
+
   pages: {
     signIn: '/login',
   },
