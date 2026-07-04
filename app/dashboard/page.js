@@ -11,18 +11,20 @@ const Dashboard = () => {
   
   const [links, setLinks] = useState([]);
   const [fetchingLinks, setFetchingLinks] = useState(true);
-  
-  // State to track which link's QR code is currently visible
   const [expandedQr, setExpandedQr] = useState(null);
 
-  // ROUTE GUARD
+  // --- NEW EDIT MODAL STATE ---
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [currentEditLink, setCurrentEditLink] = useState(null);
+  const [newUrlInput, setNewUrlInput] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
     }
   }, [status, router]);
 
-  // FETCH LINKS LOGIC
   useEffect(() => {
     if (status === "authenticated") {
       const fetchLinks = async () => {
@@ -35,21 +37,14 @@ const Dashboard = () => {
         } catch (error) {
           console.error("Error fetching links:", error);
         } finally {
-          // Only set loading to false on the very first load so the UI doesn't flicker
           setFetchingLinks((prev) => false); 
         }
       };
       
-      // 1. Initial fetch on load
       fetchLinks();
-
-      // 2. Update instantly when user switches back to this tab
       window.addEventListener("focus", fetchLinks);
-
-      // 3. THE FIX: Silently poll the database every 5 seconds for cross-device QR scans
       const pollInterval = setInterval(fetchLinks, 5000);
 
-      // Cleanup function
       return () => {
         window.removeEventListener("focus", fetchLinks);
         clearInterval(pollInterval);
@@ -57,24 +52,61 @@ const Dashboard = () => {
     }
   }, [status]);
 
-  // Handle Native Sharing or Fallback to Clipboard
   const handleShare = async (shorturl) => {
     const fullUrl = `https://bitlinks-blond.vercel.app/${shorturl}`;
-    
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: 'BitLinks Short URL',
-          text: 'Check out this link!',
-          url: fullUrl,
-        });
+        await navigator.share({ title: 'BitLinks Short URL', url: fullUrl });
       } catch (error) {
         console.log('Sharing canceled or failed.', error);
       }
     } else {
-      // Fallback for older browsers
       navigator.clipboard.writeText(fullUrl);
       alert("Link copied to clipboard! 📋"); 
+    }
+  };
+
+  // --- NEW HANDLERS FOR EDITING ---
+  const openEditModal = (link) => {
+    setCurrentEditLink(link);
+    setNewUrlInput(link.url); // Pre-fill the input with their current long URL
+    setIsEditModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+    setCurrentEditLink(null);
+    setNewUrlInput("");
+  };
+
+  const handleUpdateSubmit = async (e) => {
+    e.preventDefault();
+    setIsUpdating(true);
+    
+    try {
+      const response = await fetch("/api/links", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          shorturl: currentEditLink.shorturl,
+          newUrl: newUrlInput,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Optimistically update the UI so they see the change instantly without refreshing
+        setLinks(links.map(l => l.shorturl === currentEditLink.shorturl ? { ...l, url: newUrlInput } : l));
+        closeEditModal();
+      } else {
+        alert("Failed to update: " + data.message);
+      }
+    } catch (error) {
+      console.error("Error updating link:", error);
+      alert("Something went wrong while saving.");
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -86,11 +118,10 @@ const Dashboard = () => {
     );
   }
 
-  // Calculate total clicks from all links
   const totalClicks = links.reduce((sum, link) => sum + (link.clicks || 0), 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-black text-white px-4 sm:px-6 py-8 md:py-12">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-black text-white px-4 sm:px-6 py-8 md:py-12 relative">
       <div className="max-w-6xl mx-auto">
         
         {/* Header Section */}
@@ -116,12 +147,10 @@ const Dashboard = () => {
             <h3 className="text-gray-400 text-sm sm:text-base font-medium mb-2">Total Links</h3>
             <p className="text-3xl sm:text-4xl font-bold text-white">{links.length}</p>
           </div>
-          
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5 sm:p-6 shadow-xl">
             <h3 className="text-gray-400 text-sm sm:text-base font-medium mb-2">Total Clicks</h3>
             <p className="text-3xl sm:text-4xl font-bold text-purple-400">{totalClicks}</p>
           </div>
-          
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5 sm:p-6 shadow-xl">
             <h3 className="text-gray-400 text-sm sm:text-base font-medium mb-2">Active Status</h3>
             <div className="flex items-center gap-2 mt-2">
@@ -154,7 +183,7 @@ const Dashboard = () => {
                       >
                         bitlinks-blond.vercel.app/{link.shorturl}
                       </a>
-                      <p className="text-gray-400 text-xs sm:text-sm mt-1 truncate">
+                      <p className="text-gray-400 text-xs sm:text-sm mt-1 truncate" title={link.url}>
                         {link.url}
                       </p>
                     </div>
@@ -166,6 +195,14 @@ const Dashboard = () => {
                         <span className="font-bold text-white">{link.clicks || 0}</span>
                       </div>
                       
+                      {/* EDIT Button (NEW) */}
+                      <button
+                        onClick={() => openEditModal(link)}
+                        className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all flex items-center gap-2 border bg-orange-500/20 text-orange-300 border-orange-500/30 hover:bg-orange-500/40"
+                      >
+                        Edit ✏️
+                      </button>
+
                       {/* Share Button */}
                       <button
                         onClick={() => handleShare(link.shorturl)}
@@ -208,8 +245,55 @@ const Dashboard = () => {
             </div>
           )}
         </div>
-
       </div>
+
+      {/* --- THE EDIT MODAL --- */}
+      {isEditModalOpen && currentEditLink && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-slate-900 border border-white/20 rounded-3xl p-6 sm:p-8 shadow-2xl w-full max-w-lg relative">
+            <h2 className="text-2xl font-bold mb-2">Edit Destination URL</h2>
+            <p className="text-gray-400 text-sm mb-6">
+              Change where <span className="text-purple-400 font-mono">bit.ly/{currentEditLink.shorturl}</span> redirects to. Your short link and QR code will remain exactly the same.
+            </p>
+
+            <form onSubmit={handleUpdateSubmit} className="flex flex-col gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2 ml-1">New Long URL</label>
+                <input
+                  type="url"
+                  value={newUrlInput}
+                  onChange={(e) => setNewUrlInput(e.target.value)}
+                  required
+                  placeholder="https://your-new-website.com"
+                  className="w-full px-5 py-3 rounded-xl bg-white/5 border border-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-white"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 mt-4">
+                <button
+                  type="button"
+                  onClick={closeEditModal}
+                  className="px-5 py-2.5 rounded-xl font-semibold text-gray-300 bg-white/5 hover:bg-white/10 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdating || newUrlInput === currentEditLink.url}
+                  className="px-5 py-2.5 rounded-xl font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-[1.02] transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center gap-2"
+                >
+                  {isUpdating ? (
+                    <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Saving...</>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
