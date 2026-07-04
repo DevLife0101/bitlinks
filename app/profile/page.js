@@ -9,7 +9,7 @@ const Profile = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  // Form states for later backend integration
+  // Form states for backend integration
   const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
   const [isUpdating, setIsUpdating] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -30,20 +30,40 @@ const Profile = () => {
     );
   }
 
-  // Handle password form submission (UI only for now)
-  const handlePasswordChange = (e) => {
+  // --- Real Password Change API Call ---
+  const handlePasswordChange = async (e) => {
     e.preventDefault();
     if (passwords.new !== passwords.confirm) {
       alert("New passwords do not match!");
       return;
     }
+    
     setIsUpdating(true);
-    // Simulate API call
-    setTimeout(() => {
-      alert("Password updated successfully!");
-      setPasswords({ current: "", new: "", confirm: "" });
+    
+    try {
+      const response = await fetch("/api/user", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentPassword: passwords.current,
+          newPassword: passwords.new,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert("Password updated successfully! 🔒");
+        setPasswords({ current: "", new: "", confirm: "" });
+      } else {
+        alert("Failed: " + data.message);
+      }
+    } catch (error) {
+      console.error("Error updating password:", error);
+      alert("Something went wrong.");
+    } finally {
       setIsUpdating(false);
-    }, 1000);
+    }
   };
 
   // Generate a fake API key for visual purposes
@@ -51,6 +71,28 @@ const Profile = () => {
     const newKey = "bl_live_" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     setApiKey(newKey);
     alert("New API Key generated! 🚀");
+  };
+
+  // --- Real Account Deletion API Call ---
+  const handleDeleteAccount = async () => {
+    try {
+      const response = await fetch("/api/user", {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Sign the user out and redirect them home immediately
+        signOut({ callbackUrl: '/' });
+      } else {
+        alert("Failed to delete account: " + data.message);
+        setShowDeleteConfirm(false);
+      }
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      alert("Something went wrong.");
+    }
   };
 
   return (
@@ -216,7 +258,7 @@ const Profile = () => {
                     Cancel
                   </button>
                   <button 
-                    onClick={() => { alert("Backend route needed!"); signOut({ callbackUrl: '/' }); }}
+                    onClick={handleDeleteAccount}
                     className="flex-1 sm:flex-none px-4 py-2 rounded-lg font-bold bg-red-500 text-white hover:bg-red-600 transition-all text-sm shadow-[0_0_15px_rgba(239,68,68,0.5)]"
                   >
                     Yes, Delete Everything
