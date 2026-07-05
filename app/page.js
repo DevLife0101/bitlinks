@@ -33,6 +33,9 @@ export default function Home() {
   const text = "The Best URL Shortener in the Market";
   const [displayedText, setDisplayedText] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false); // In production, replace with real auth state
+  
+  // Local state to toggle language examples in the developer documentation mock
+  const [apiTab, setApiTab] = useState("js");
 
   useEffect(() => {
     let i = 0;
@@ -234,6 +237,114 @@ export default function Home() {
             </motion.div>
 
           </div>
+        </div>
+      </section>
+
+      {/* --- NEW SECTION: DEVELOPER API DOCUMENTATION PREVIEW --- */}
+      <section id="developers" className="py-20 sm:py-24 px-6 border-t border-white/5 bg-slate-950/30 relative z-10">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-12 items-center">
+          
+          {/* Left Column: API Features & Info */}
+          <motion.div 
+            initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }}
+            className="lg:col-span-5 space-y-6"
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-xs font-semibold text-blue-400 tracking-wide uppercase">
+              Developer Ecosystem
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+              Shorten Links at Scale with our REST API
+            </h2>
+            <p className="text-gray-400 text-base sm:text-lg leading-relaxed">
+              Automate your workflows by embedding BitLinks shortening architecture directly into your external software applications, custom landing pages, or automated scripts.
+            </p>
+
+            <div className="space-y-4 pt-2">
+              <div className="flex items-start gap-4">
+                <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400 shrink-0 mt-0.5">🔑</div>
+                <div>
+                  <h4 className="font-bold text-white text-base">Simple Token Authentication</h4>
+                  <p className="text-gray-400 text-sm mt-0.5">Access your personal, secure API key seamlessly right from your Account Settings Profile tab.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="w-8 h-8 rounded-lg bg-pink-500/20 flex items-center justify-center text-pink-400 shrink-0 mt-0.5">⚡</div>
+                <div>
+                  <h4 className="font-bold text-white text-base">Ultra-Low Latency & High Limits</h4>
+                  <p className="text-gray-400 text-sm mt-0.5">Built on MongoDB and high-speed cloud clusters to yield lightning-quick payload responses at scale.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 shrink-0 mt-0.5">💯</div>
+                <div>
+                  <h4 className="font-bold text-white text-base">100% Fully Free Ecosystem</h4>
+                  <p className="text-gray-400 text-sm mt-0.5">No hidden microtransactions or locked enterprise barriers. Complete control over endpoints at zero cost.</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Right Column: Code Terminal Sandbox Component */}
+          <motion.div 
+            initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }}
+            className="lg:col-span-7 bg-slate-900/80 border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
+          >
+            {/* Terminal Top Window Controls bar */}
+            <div className="bg-slate-950 px-4 py-3 border-b border-white/10 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                <span className="text-xs text-gray-500 font-mono ml-2">api-request-snippet.js</span>
+              </div>
+              
+              {/* Tab Selector Buttons */}
+              <div className="flex gap-1 bg-white/5 p-0.5 rounded-lg border border-white/5">
+                <button 
+                  onClick={() => setApiTab("js")}
+                  className={`px-2.5 py-1 text-xs font-mono rounded-md transition-all ${apiTab === "js" ? "bg-purple-600 text-white shadow-sm" : "text-gray-400 hover:text-white"}`}
+                >
+                  JavaScript
+                </button>
+                <button 
+                  onClick={() => setApiTab("curl")}
+                  className={`px-2.5 py-1 text-xs font-mono rounded-md transition-all ${apiTab === "curl" ? "bg-purple-600 text-white shadow-sm" : "text-gray-400 hover:text-white"}`}
+                >
+                  cURL
+                </button>
+              </div>
+            </div>
+
+            {/* Code Body */}
+            <div className="p-5 font-mono text-xs sm:text-sm overflow-x-auto bg-slate-950/50 leading-relaxed text-slate-300">
+              {apiTab === "js" ? (
+                <pre>
+                  <code>
+                    <span className="text-purple-400">const</span> response = <span className="text-purple-400">await</span> <span className="text-blue-400">fetch</span>(<span className="text-yellow-300">"https://bitlinks.app/api/links"</span>, &#123;<br />
+                    &nbsp;&nbsp;method: <span className="text-yellow-300">"POST"</span>,<br />
+                    &nbsp;&nbsp;headers: &#123;<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span className="text-yellow-300">"Content-Type"</span>: <span className="text-yellow-300">"application/json"</span>,<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span className="text-yellow-300">"Authorization"</span>: <span className="text-yellow-300">"Bearer bl_live_your_key"</span><br />
+                    &nbsp;&nbsp;&#125;,<br />
+                    &nbsp;&nbsp;body: JSON.<span className="text-blue-400">stringify</span>(&#123; url: <span className="text-yellow-300">"https://massive-destination.com"</span> &#125;)<br />
+                    &#125;);<br /><br />
+                    <span className="text-purple-400">const</span> data = <span className="text-purple-400">await</span> response.<span className="text-blue-400">json</span>();<br />
+                    console.<span className="text-blue-400">log</span>(data.<span className="text-emerald-400">shorturl</span>); <span className="text-gray-500">// Returns generated 6-char anchor slug</span>
+                  </code>
+                </pre>
+              ) : (
+                <pre>
+                  <code>
+                    <span className="text-purple-400">curl</span> -X POST https://bitlinks.app/api/links \<br />
+                    &nbsp;&nbsp;-H <span className="text-yellow-300">"Content-Type: application/json"</span> \<br />
+                    &nbsp;&nbsp;-H <span className="text-yellow-300">"Authorization: Bearer bl_live_your_key"</span> \<br />
+                    &nbsp;&nbsp;-d <span className="text-yellow-300">'&#123;"url": "https://massive-destination.com"&#125;'</span>
+                  </code>
+                </pre>
+              )}
+            </div>
+          </motion.div>
+
         </div>
       </section>
 
