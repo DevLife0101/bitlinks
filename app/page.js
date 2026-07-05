@@ -4,7 +4,9 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useSession } from "next-auth/react"; // REAL AUTH INTEGRATION
 
+// --- SHARED COMPONENT: Number Counter ---
 const Counter = ({ end }) => {
   const [count, setCount] = useState(0);
 
@@ -29,12 +31,106 @@ const Counter = ({ end }) => {
   return <span>{count}</span>;
 };
 
+
+// ==========================================
+// MAIN PAGE CONTROLLER
+// ==========================================
 export default function Home() {
+  const { data: session, status } = useSession();
+
+  // 1. Show a sleek loading state while checking their cookie
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-white/20 border-t-purple-500 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  // 2. If they are logged in, show the customized Launchpad
+  if (status === "authenticated") {
+    return <Launchpad session={session} />;
+  }
+
+  // 3. If they are logged out, show the public Marketing Landing Page
+  return <MarketingPage />;
+}
+
+
+// ==========================================
+// THE LOGGED-IN EXPERIENCE (LAUNCHPAD)
+// ==========================================
+function Launchpad({ session }) {
+  return (
+    <div className="relative min-h-screen flex flex-col items-center justify-center overflow-x-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-black text-white px-6">
+      
+      {/* Background Shapes */}
+      <div className="absolute w-64 h-64 bg-purple-500/20 rounded-full blur-[100px] top-20 left-10 animate-pulse pointer-events-none"></div>
+      <div className="absolute w-96 h-96 bg-pink-500/20 rounded-full blur-[120px] bottom-10 right-10 animate-pulse pointer-events-none"></div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        transition={{ duration: 0.6 }}
+        className="relative z-10 w-full max-w-4xl text-center"
+      >
+        {/* User Avatar */}
+        <div className="mb-8 relative inline-block">
+          {session.user?.image ? (
+            <Image 
+              src={session.user.image} 
+              alt="Profile" 
+              width={96} height={96} 
+              className="rounded-full border-4 border-purple-500/50 shadow-[0_0_40px_rgba(168,85,247,0.4)] object-cover"
+            />
+          ) : (
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-pink-500 to-orange-400 flex items-center justify-center text-4xl font-bold border-4 border-purple-500/50 shadow-[0_0_40px_rgba(236,72,153,0.4)] mx-auto">
+              {session.user?.name?.charAt(0).toUpperCase() || "U"}
+            </div>
+          )}
+        </div>
+
+        <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-4">
+          Welcome back, <span className="bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">{session.user?.name?.split(" ")[0]}!</span>
+        </h1>
+        <p className="text-gray-300 text-lg md:text-xl max-w-2xl mx-auto mb-12">
+          Your command center is ready. What would you like to do today?
+        </p>
+
+        {/* Quick Action Cards */}
+        <div className="grid sm:grid-cols-3 gap-6 text-left">
+          
+          <Link href="/shorten" className="bg-white/5 border border-white/10 p-6 rounded-3xl hover:bg-white/10 hover:border-purple-500/50 transition-all group flex flex-col items-center sm:items-start text-center sm:text-left">
+            <div className="w-12 h-12 bg-purple-500/20 text-purple-400 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">🚀</div>
+            <h3 className="text-xl font-bold mb-2">Create Link</h3>
+            <p className="text-gray-400 text-sm">Shrink a new URL or generate a fresh QR code instantly.</p>
+          </Link>
+
+          <Link href="/dashboard" className="bg-white/5 border border-white/10 p-6 rounded-3xl hover:bg-white/10 hover:border-pink-500/50 transition-all group flex flex-col items-center sm:items-start text-center sm:text-left">
+            <div className="w-12 h-12 bg-pink-500/20 text-pink-400 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">📊</div>
+            <h3 className="text-xl font-bold mb-2">My Dashboard</h3>
+            <p className="text-gray-400 text-sm">Track your live analytics, click history, and manage active links.</p>
+          </Link>
+
+          <Link href="/profile" className="bg-white/5 border border-white/10 p-6 rounded-3xl hover:bg-white/10 hover:border-blue-500/50 transition-all group flex flex-col items-center sm:items-start text-center sm:text-left">
+            <div className="w-12 h-12 bg-blue-500/20 text-blue-400 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">⚙️</div>
+            <h3 className="text-xl font-bold mb-2">Account Settings</h3>
+            <p className="text-gray-400 text-sm">Manage your security, identity, and developer API keys.</p>
+          </Link>
+
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+
+// ==========================================
+// THE LOGGED-OUT EXPERIENCE (MARKETING)
+// ==========================================
+function MarketingPage() {
   const text = "The Best URL Shortener in the Market";
   const [displayedText, setDisplayedText] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // In production, replace with real auth state
-  
-  // Local state to toggle language examples in the developer documentation mock
   const [apiTab, setApiTab] = useState("js");
 
   useEffect(() => {
@@ -50,7 +146,7 @@ export default function Home() {
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-black text-white font-sans selection:bg-pink-500 selection:text-white">
       
-      {/* Background Shapes - Hidden on very small screens to avoid overflow */}
+      {/* Background Shapes */}
       <div className="absolute w-48 h-48 sm:w-72 sm:h-72 bg-purple-500/20 rounded-full blur-3xl top-10 left-0 sm:left-10 animate-pulse pointer-events-none"></div>
       <div className="absolute w-64 h-64 sm:w-96 sm:h-96 bg-pink-500/20 rounded-full blur-3xl bottom-10 right-0 sm:right-10 animate-pulse pointer-events-none"></div>
 
@@ -80,27 +176,13 @@ export default function Home() {
           </p>
 
           <div className="flex flex-col w-full sm:flex-row gap-4 mt-4">
-            {isLoggedIn ? (
-              <>
-                <Link href="/dashboard" className="px-8 py-4 rounded-xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-105 transition-all text-center shadow-[0_0_20px_rgba(168,85,247,0.4)] flex items-center justify-center">
-                  Go to Dashboard 📊
-                </Link>
-                <a href="#developers" className="px-8 py-4 rounded-xl font-bold bg-white/10 hover:bg-white/20 transition-all text-center flex items-center justify-center">
-                  Read the Docs
-                </a>
-              </>
-            ) : (
-              <>
-                <Link href="/shorten" className="px-8 py-4 rounded-xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-105 transition-all text-center shadow-[0_0_20px_rgba(168,85,247,0.4)] flex items-center justify-center">
-                  Try Shortener Now 🚀
-                </Link>
-                {/* Updated QR Code Hook Button */}
-                <Link href="/login" className="px-8 py-3 rounded-xl font-bold bg-white/10 hover:bg-white/20 transition-all text-center flex flex-col items-center justify-center border border-white/5">
-                  <span>Unlock QR Codes 📱</span>
-                  <span className="text-xs font-normal text-purple-300 mt-1">(Requires Account)</span>
-                </Link>
-              </>
-            )}
+            <Link href="/shorten" className="px-8 py-4 rounded-xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-105 transition-all text-center shadow-[0_0_20px_rgba(168,85,247,0.4)] flex items-center justify-center">
+              Try Shortener Now 🚀
+            </Link>
+            <Link href="/login" className="px-8 py-3 rounded-xl font-bold bg-white/10 hover:bg-white/20 transition-all text-center flex flex-col items-center justify-center border border-white/5">
+              <span>Unlock QR Codes 📱</span>
+              <span className="text-xs font-normal text-purple-300 mt-1">(Requires Account)</span>
+            </Link>
           </div>
         </motion.div>
 
@@ -141,7 +223,7 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* Features Section (Expanded to 4 columns for QR) */}
+      {/* Features Section */}
       <section className="py-16 sm:py-24 relative z-10 px-6">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Why the world uses BitLinks</h2>
@@ -169,7 +251,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* The Hook: Why Create an Account (Benefits, Security, QR) */}
+      {/* The Hook: Why Create an Account */}
       <section className="py-20 sm:py-28 bg-gradient-to-b from-transparent to-purple-900/20 px-6 border-t border-white/5">
         <div className="max-w-5xl mx-auto">
           
@@ -187,8 +269,6 @@ export default function Home() {
           </motion.div>
           
           <div className="grid md:grid-cols-2 gap-6">
-            
-            {/* Free QR Code Generation */}
             <motion.div 
               initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} viewport={{ once: true }}
               className="bg-white/5 p-8 rounded-3xl border border-white/10 hover:border-purple-500/50 transition-all group"
@@ -196,11 +276,10 @@ export default function Home() {
               <div className="w-12 h-12 bg-purple-500/20 text-purple-400 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">📱</div>
               <strong className="block text-xl text-white mb-2">QR Codes (Free for Users)</strong>
               <span className="text-base text-gray-400 leading-relaxed block">
-                Take your links to the physical world. Generate, customize, and download high-quality PNG QR codes for any link. <em>(Requires login to prevent spam abuse).</em>
+                Take your links to the physical world. Generate, customize, and download high-quality PNG QR codes for any link.
               </span>
             </motion.div>
 
-            {/* Security & Privacy */}
             <motion.div 
               initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.1 }} viewport={{ once: true }}
               className="bg-white/5 p-8 rounded-3xl border border-white/10 hover:border-green-500/50 transition-all group"
@@ -208,11 +287,10 @@ export default function Home() {
               <div className="w-12 h-12 bg-green-500/20 text-green-400 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">🔒</div>
               <strong className="block text-xl text-white mb-2">Ironclad Privacy & Security</strong>
               <span className="text-base text-gray-400 leading-relaxed block">
-                Your data is yours. We utilize bank-grade hashing for passwords, secure OAuth protocols (Google/GitHub), and strict data encryption to keep your account safe.
+                Your data is yours. We utilize bank-grade hashing for passwords, secure OAuth protocols (Google/GitHub), and strict data encryption.
               </span>
             </motion.div>
 
-            {/* Link Management */}
             <motion.div 
               initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.2 }} viewport={{ once: true }}
               className="bg-white/5 p-8 rounded-3xl border border-white/10 hover:border-pink-500/50 transition-all group"
@@ -220,11 +298,10 @@ export default function Home() {
               <div className="w-12 h-12 bg-pink-500/20 text-pink-400 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">📂</div>
               <strong className="block text-xl text-white mb-2">Permanent Link History</strong>
               <span className="text-base text-gray-400 leading-relaxed block">
-                Never lose a link again. Every URL you create is securely saved to your personal dashboard where you can easily copy, share, or edit them anytime.
+                Never lose a link again. Every URL you create is securely saved to your personal dashboard where you can manage them.
               </span>
             </motion.div>
 
-            {/* Analytics */}
             <motion.div 
               initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.3 }} viewport={{ once: true }}
               className="bg-white/5 p-8 rounded-3xl border border-white/10 hover:border-orange-500/50 transition-all group"
@@ -232,19 +309,17 @@ export default function Home() {
               <div className="w-12 h-12 bg-orange-500/20 text-orange-400 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">📈</div>
               <strong className="block text-xl text-white mb-2">Live Click Analytics</strong>
               <span className="text-base text-gray-400 leading-relaxed block">
-                Watch the numbers go up in real-time. Track total engagement instantly to see how well your marketing campaigns or social posts are performing.
+                Watch the numbers go up in real-time. Track total engagement instantly to see how well your campaigns perform.
               </span>
             </motion.div>
-
           </div>
         </div>
       </section>
 
-      {/* --- NEW SECTION: DEVELOPER API DOCUMENTATION PREVIEW --- */}
+      {/* DEVELOPER API DOCUMENTATION PREVIEW */}
       <section id="developers" className="py-20 sm:py-24 px-6 border-t border-white/5 bg-slate-950/30 relative z-10">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-12 items-center">
           
-          {/* Left Column: API Features & Info */}
           <motion.div 
             initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }}
             className="lg:col-span-5 space-y-6"
@@ -284,12 +359,10 @@ export default function Home() {
             </div>
           </motion.div>
 
-          {/* Right Column: Code Terminal Sandbox Component */}
           <motion.div 
             initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }}
             className="lg:col-span-7 bg-slate-900/80 border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
           >
-            {/* Terminal Top Window Controls bar */}
             <div className="bg-slate-950 px-4 py-3 border-b border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-red-500"></div>
@@ -298,7 +371,6 @@ export default function Home() {
                 <span className="text-xs text-gray-500 font-mono ml-2">api-request-snippet.js</span>
               </div>
               
-              {/* Tab Selector Buttons */}
               <div className="flex gap-1 bg-white/5 p-0.5 rounded-lg border border-white/5">
                 <button 
                   onClick={() => setApiTab("js")}
@@ -315,7 +387,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Code Body */}
             <div className="p-5 font-mono text-xs sm:text-sm overflow-x-auto bg-slate-950/50 leading-relaxed text-slate-300">
               {apiTab === "js" ? (
                 <pre>
