@@ -18,6 +18,9 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "Bitlinks - Your trusted URL shortener",
   description: "Bitlinks helps you shorten your Urls easily",
+  verification: {
+    google: "hm-CWpmyqCZ8-HkVRy2LI4eaGI2E3fCpLjeaGVt4Z1I",
+  },
 };
 
 export default function RootLayout({ children }) {
@@ -31,7 +34,7 @@ export default function RootLayout({ children }) {
           <Navbar />
           <main>{children}</main>
         </AuthProvider>
-         
+          
         {/* Analytics tools can sit quietly at the bottom of the body */}
         <Analytics />
         <SpeedInsights />
