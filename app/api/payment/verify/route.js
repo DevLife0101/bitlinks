@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
-import clientPromise from "@/lib/mongodb"; // Bring in your MongoDB client
+import clientPromise from "@/lib/mongodb";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(request) {
   try {
@@ -15,19 +17,17 @@ export async function POST(request) {
       .update(body.toString())
       .digest("hex");
 
-    // 3. Compare the generated hash to the one Razorpay sent
+    // 3. Compare the generated hash to the one Razorpay sent back
     const isAuthentic = expectedSignature === razorpay_signature;
 
     if (!isAuthentic) {
-      // Reject the order entirely — do not treat it as a genuine payment
       return NextResponse.json(
         { success: false, message: "Invalid payment signature!" },
         { status: 400 }
       );
     }
 
-    // 4. THE PAYMENT IS 100% SECURE. 
-    // Now you can safely update the user's document in MongoDB to reflect their Pro status
+    // 4. Verification Passed: Update the user in MongoDB
     const client = await clientPromise;
     const db = client.db("bitlinks");
     
