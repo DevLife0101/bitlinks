@@ -5,8 +5,8 @@ export const dynamic = "force-dynamic";
 
 // Initialize Razorpay using your secret environment variables
 const razorpay = new Razorpay({
-  key_id: process.env.rzp_test_TNFeHXducBdOBj,
-  key_secret: process.env.a1u5heTUcjIGrPTD6cCm7Dle,
+  key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
 export async function POST(request) {
