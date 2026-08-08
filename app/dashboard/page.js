@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import QRCodeDisplay from "@/components/QRCodeDisplay";
+import UpgradeButton from "@/components/UpgradeButton";
 
 const Dashboard = () => {
   const { data: session, status } = useSession();
@@ -125,7 +126,7 @@ const Dashboard = () => {
       <div className="max-w-6xl mx-auto">
         
         {/* Header Section */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 sm:mb-12 gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 sm:mb-12 gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
               Welcome back, {session?.user?.name?.split(" ")[0]}! 👋
@@ -133,12 +134,16 @@ const Dashboard = () => {
             <p className="text-gray-400 mt-2 text-sm sm:text-base">Here is what is happening with your links today.</p>
           </div>
           
-          <Link 
-            href="/shorten" 
-            className="w-full sm:w-auto justify-center px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/40 transition-all duration-300 flex items-center gap-2"
-          >
-            <span>+</span> Create New Link
-          </Link>
+          {/* Action Buttons Group */}
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            <UpgradeButton />
+            <Link 
+              href="/shorten" 
+              className="w-full sm:w-auto justify-center px-6 py-3 rounded-xl font-semibold bg-white/10 hover:bg-white/20 border border-white/10 transition-all duration-300 flex items-center gap-2"
+            >
+              <span>+</span> Create New Link
+            </Link>
+          </div>
         </div>
 
         {/* Stats Grid */}
