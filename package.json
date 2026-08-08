@@ -17,6 +17,7 @@
     "next": "16.1.4",
     "next-auth": "^4.24.14",
     "qrcode.react": "^4.2.0",
+    "razorpay": "^2.9.8",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "resend": "^6.16.0",
